@@ -22,12 +22,11 @@ nabs <- function(x) {
 
 scrape_schedule <- function(){
   
-# Define scraping variables (URL, number of pages to loop over)
   ## Description
-  # Scrapes the raw html tables from pro-football-reference.com in a data.frame (games_df)
-  # Returns the 
-  # 
+  # Scrapes the raw html tables from pro-football-reference.com's list of games played since 1970 AFL-NFL merger
+  # Returns a single data.frame of the collated tables (games_df)
   
+# Define scraping variables (URL, number of pages to loop over)
 # URL for all games between 1970, Week 6 2018
 url <- "https://www.pro-football-reference.com/play-index/tgl_finder.cgi?request=1&match=game&year_min=1970&year_max=2018&game_type=E&game_num_min=0&game_num_max=99&week_num_min=0&week_num_max=99&temperature_gtlt=lt&c5val=1.0&order_by=game_date&offset="
 # Data is paginated. "Offset" variable governs the 100 rows displayed on each page. 
@@ -37,7 +36,6 @@ offset_seq <- seq(0, offset_max, 100)
 
 # Scrape each page in a foreach
 games_list <- foreach(offset = offset_seq) %do% {
-  
   
   cat(offset/offset_max, "% complete")
   cat("\n")
@@ -66,6 +64,9 @@ return(games_df)
 enhance_schedule <- function(games_df){
 
   
+  ## Description
+  # Takes a games_df as the input, 
+  # Returns a single data.frame of the collated tables (games_df)
   
   
   
