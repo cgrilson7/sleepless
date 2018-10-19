@@ -1,5 +1,5 @@
 ---
-title: "Sleepless in New England: The Cost of Greatness"
+title: "Sleepless in New England: The Unseen Cost of Greatness"
 output: github_document
 ---
 

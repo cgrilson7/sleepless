@@ -1,4 +1,4 @@
-Sleepless in New England: The Cost of Greatness
+Sleepless in New England: The Unseen Cost of Greatness
 ================
 
 An analysis of the price New Englanders pay to support their sports dynasties.
