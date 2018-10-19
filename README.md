@@ -1,33 +1,10 @@
 Sleepless in New England: The Cost of Greatness
 ================
 
-An analysis of
---------------
+An analysis of the price New Englanders pay to support their sports dynasties.
 
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+The big 4 sports teams of New England - the Bruins (NHL), Celtics (NBA), Patriots (NFL), and Red Sox (MLB) - have enjoyed an unprecedented run of success, beginning in 2001 with the Patriots' win in Super Bowl XXXVI and continuing through the present, with the Red Sox once again reaching the World Series this year.
 
-Including Code
---------------
+As a result of national interest in watching these talented teams, a disproportionate number of their games played have been either scheduled in or "flexed" to the primetime slot. With game lengths stretching longer and longer - especially in the MLB and NFL - diehard Boston fans see their bedtimes pushed back later and later.
 
-You can include R code in the document as follows:
-
-``` r
-summary(cars)
-```
-
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
-
-Including Plots
----------------
-
-You can also embed plots, for example:
-
-![](README_files/figure-markdown_github/pressure-1.png)
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Exactly to what extent has this phenomenon impacted the sleep & productivity of working & learning Bostonians, and what other sports-centric cities (if any) have faced similar burdens?
