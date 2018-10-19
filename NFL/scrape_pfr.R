@@ -19,6 +19,8 @@ nabs <- function(x) {
 
 # Scraping functions
 
+box_score_example <- "https://www.pro-football-reference.com/boxscores/201809060phi.htm"
+annual_schedule_example <- "https://www.pro-football-reference.com/years/2018/games.htm"
 
 scrape_schedule <- function(){
   
