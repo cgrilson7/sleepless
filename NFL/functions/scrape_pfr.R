@@ -50,12 +50,18 @@ scrape_schedule <- function(yyyy){
   boxscore_links <- all_links[grepl("boxscores/[0-9]+", all_links)]
   
   schedule_df$link <- boxscore_links
+  
+  schedule_df %>% 
+    mutate(date = as.Date(str_extract(schedule_df$link, "[0-9]+"), format = "%Y%m%d0")) %>%
+    filter(date < Sys.Date()) -> schedule_df
 
   return(schedule_df)
   
 }
 
-get_times <- function(link_ending){
+get_times <- function(link_ending, wait = 2){
+  
+  Sys.sleep(wait)
   
   url <- paste0("https://www.pro-football-reference.com", link_ending)
   
@@ -77,8 +83,7 @@ enhance_schedule <- function(schedule_df){
   colnames(all_times_df) <- c("start_time", "game_length")
 
   enhanced_schedule_df <- bind_cols(schedule_df, all_times_df) %>%
-    mutate(date = as.Date(str_extract(link, "[0-9]+"), format = "%Y%m%d0"),
-           pm = grepl("pm", start_time),
+    mutate(pm = grepl("pm", start_time),
            start_time = gsub("[a-z]{2}", "", start_time)) %>%
     separate(start_time, into = c("start_hour", "start_minute"), sep = ":", convert = TRUE) %>%
     mutate(start_hour = start_hour + ifelse(pm & start_hour < 12, 12, 0)) %>%
