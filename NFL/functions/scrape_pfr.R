@@ -59,7 +59,7 @@ scrape_schedule <- function(yyyy){
   
 }
 
-get_times <- function(link_ending, wait = 2){
+get_times <- function(link_ending, wait = 1){
   
   Sys.sleep(wait)
   
@@ -71,8 +71,12 @@ get_times <- function(link_ending, wait = 2){
     str_extract_all("[0-9]+:[0-9]+.+") %>%
     unlist()
   
-  return(times)
-  
+  if(length(times) == 1){
+    return(append(times, NA))
+  } else {
+    return(times)
+  }
+
 }
 
 enhance_schedule <- function(schedule_df){
