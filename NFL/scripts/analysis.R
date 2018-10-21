@@ -6,7 +6,8 @@ require(tidyverse); require(magrittr)
 # Load data
 load("NFL/data/merged_2001_2018.Rdata")
 
-# Add "local time" column - where the locale is the "team"'s locale - not where the game is being played. Here, we want to know the game start time in the timezone of the "team"'s fanbase.
+# Add "local time" column - where the locale is the team's locale - not where the game is being played. Here, we want to know the game start time in the timezone of the team's fanbase.
+
 all_team_games %>%
   select(team) %>%
   arrange(team) %>%
@@ -58,13 +59,14 @@ all_team_games %<>%
 # Calculating game end times
 all_team_games %<>%
   # Calculate end minute first - to see if it is above 60.
-  # If so, we must add an hour to the end hour column. 
-  # Calculate the true end minute by taking the modulo of 60.
   mutate(end_minute_pre = start_minute + length_minutes,
+         # If so, we must add an hour to the end hour column.
          add_hour = end_minute_pre >= 60,
+         # Calculate the true end minute by taking the modulo of 60.
          end_minute = end_minute_pre %% 60,
+         # Calculate the true end hour
          end_hour = start_hour + length_hours + ifelse(add_hour, 1, 0)) %>%
-  # Calculate the start and end hours in terms of the team's home city.
+  # Calculate the start and end hours in terms of the team's time zone.
   mutate(team_start_hour = start_hour + offset,
          team_end_hour = end_hour + offset) %>%
   # Rearrange columns
