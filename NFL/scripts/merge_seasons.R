@@ -1,19 +1,23 @@
 # Merge seasons and analyze.
 require(tidyverse);
 
-# Start with 2001 season (load enhanced_schedule_df, assign to all_es_df)
-load("NFL/data/es_2001.Rdata")
-all_es_df <- enhanced_schedule_df
+# Create empty list to hold all enhanced_schedules
+es_list <- list()
 
-# Loop over following seasons, binding rows of all
-for(yyyy in 2002:2018){
+# Loop over 2001-2018 seasons, loading in enhanced_schedule and adding to list
+for(yyyy in 2001:2018){
+  
   load(paste0("NFL/data/es_", yyyy, ".Rdata"))
   
-  all_es_df <- bind_rows(all_es_df, enhanced_schedule_df)
+  es_list[[yyyy]] <- enhanced_schedule_df
+
 }
 
-# Reformat so each row corresponds to one team, with opponent ("opp") and opponent stats ("opp_pts") - not "winner", "loser" and "ptsW"/"ptsL" etc
+# Bind enhanced_schedules together
+all_es_df <- do.call("rbind", es_list) %>%
+  data.frame(row.names = NULL)
 
+# Reformat so each row corresponds to one team, with opponent ("opp") and opponent stats ("opp_pts") - not "winner", "loser" and "ptsW"/"ptsL" etc
 winners <- all_es_df %>%
   select(week:time, # unchanged
          team = winner,
@@ -44,7 +48,7 @@ losers <- all_es_df %>%
   mutate(is_away = !is_away)
 
 all_team_games <- 
-  bind_rows(winner_df, loser_df) %>%
+  bind_rows(winners, losers) %>%
   arrange(date)
 
 save(all_team_games, file = "NFL/data/merged_2001_2018.Rdata")

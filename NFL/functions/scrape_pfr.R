@@ -61,9 +61,8 @@ scrape_schedule <- function(yyyy){
   
 }
 
-get_times <- function(link_ending, wait = 1){
-  
-  Sys.sleep(wait)
+get_times <- function(link_ending){
+
   
   url <- paste0("https://www.pro-football-reference.com", link_ending)
   
@@ -73,7 +72,9 @@ get_times <- function(link_ending, wait = 1){
     str_extract_all("[0-9]+:[0-9]+.+") %>%
     unlist()
   
-  if(length(times) == 1){
+  if(length(times) == 0){
+    return(c(NA, NA))
+  } else if(length(times) == 1){
     return(append(times, NA))
   } else {
     return(times)
