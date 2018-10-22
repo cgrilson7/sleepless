@@ -117,6 +117,8 @@ all_team_games %>%
   group_by(team, team_end_hour) %>%
   summarize(games = n()) -> teams_by_end_hour
 
+# Giants Cowboys (latest ending game): write-up https://www.bigblueinteractive.com/2003/09/18/game-review-dallas-cowboys-new-york-giants-september-15-2003/
+
 # Let's take the inverse: what games have impacted productivity because they are weekday games starting early, causing people to watch on the job or leave work? (These will be mostly west coast teams.)
 all_team_games %>%
   filter(!(day %in% c("Sat", "Sun")),

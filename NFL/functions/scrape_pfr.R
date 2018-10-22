@@ -27,9 +27,11 @@ scrape_schedule <- function(yyyy){
   
   url <- paste0("https://www.pro-football-reference.com/years/", yyyy, "/games.htm")
   
+  page <- read_html(url)
+  
   # Get schedule table
   
-  read_html(url) %>%
+  page %>%
     html_nodes("table.sortable.stats_table") %>%
     html_table() -> schedule_list
   
@@ -43,7 +45,7 @@ scrape_schedule <- function(yyyy){
   
   # Get boxscore links
   
-  read_html(url) %>%
+  page %>% 
     html_nodes("a") %>%
     html_attr("href") -> all_links
   
