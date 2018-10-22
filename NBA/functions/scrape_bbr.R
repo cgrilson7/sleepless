@@ -18,7 +18,9 @@ nba.get_monthly_schedule <- function(month, year){
   
   url = paste0("https://www.basketball-reference.com/leagues/NBA_", year, "_games-", month, ".html")
   
-  page = read_html(url)
+  out <- tryCatch({
+    
+  page <- read_html(url)
   
   page %>%
     html_nodes("table") %>%
@@ -54,6 +56,16 @@ nba.get_monthly_schedule <- function(month, year){
   
   return(schedule_df)
   
+  },
+  error = function(cond){
+    
+    message(paste("^ This month's URL does not seem to exist:", url))
+    closeAllConnections()
+    
+  })
+  
+  return(out)
+  
 }
 
 nba.get_annual_schedule <- function(year){
@@ -82,21 +94,36 @@ nba.get_annual_schedule <- function(year){
 
 nba.get_times <- function(link_ending){
   
-  box <- read_html(paste0("https://www.basketball-reference.com", link_ending))
+  url <- paste0("https://www.basketball-reference.com", link_ending)
   
-  box %>%
-    html_nodes("#content .scorebox") %>%
-    html_text() %>%
-    str_extract("[0-9]+:[0-9]{2} [A-z]+") -> game_start
+  out <- tryCatch({
+    
+    box <- read_html(paste0("https://www.basketball-reference.com", link_ending))
+    
+    box %>%
+      html_nodes("#content .scorebox") %>%
+      html_text() %>%
+      str_extract("[0-9]+:[0-9]{2} [A-z]+") -> game_start
+    
+    box %>%
+      html_nodes("#content") %>%
+      html_text() %>%
+      str_extract("[0-9]+:[0-9]{2}\\n") %>%
+      gsub("\\n", "",.) -> game_length
+    
+    return(c(game_start, game_length))
+    
+  }, error = function(cond){
+    
+    message(paste("^ This boxscore does not seem to exist:", url))
+    closeAllConnections()
+    return(c(NA, NA))
+    
+  }
+  )
   
-  box %>%
-    html_nodes("#content") %>%
-    html_text() %>%
-    str_extract("[0-9]+:[0-9]{2}\\n") %>%
-    gsub("\\n", "",.) -> game_length
-  
-  return(c(game_start, game_length))
-  
+  return(out)
+ 
 }
 
 nba.enhance_schedule <- function(schedule_df){
