@@ -7,9 +7,9 @@ for(yyyy in 2001:2018) {
   cat(paste0(yyyy,"\n"))
   Sys.sleep(1)
   
-  schedule_df <- scrape_schedule(yyyy)
+  schedule_df <- nfl.get_annual_schedule(yyyy)
   
-  enhanced_schedule_df <- enhance_schedule(schedule_df)
+  enhanced_schedule_df <- nfl.enhance_schedule(schedule_df)
   
   save(enhanced_schedule_df, file = paste0("NFL/data/es_", yyyy, ".Rdata"))
   

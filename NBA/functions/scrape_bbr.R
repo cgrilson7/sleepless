@@ -1,5 +1,5 @@
 # Scrape basketball-reference.com
-require(tidyverse); require(rvest)
+require(tidyverse); require(rvest); require(pbapply)
 
 # Helpful functions
 nabs <- function(x) {
@@ -14,7 +14,7 @@ nabs <- function(x) {
 }
 
 # Games listed by month:
-get_monthly_schedule <- function(month, year){
+nba.get_monthly_schedule <- function(month, year){
   
   url = paste0("https://www.basketball-reference.com/leagues/NBA_", year, "_games-", month, ".html")
   
@@ -56,15 +56,17 @@ get_monthly_schedule <- function(month, year){
   
 }
 
-get_annual_schedule <- function(year){
+nba.get_annual_schedule <- function(year){
   
   all_months <- list() #create an empty list
   
+  cat(paste0("Scraping ", year-1, "-", year, " schedule...\n"))
+  
   for(m in c("October", "November", "December", "January", "February", "March", "April", "May", "June")){
     
-    cat(paste0(m, " ", year, "\n"))
+    cat(m, "\n")
     
-    new_month = get_monthly_schedule(tolower(m), year)
+    new_month = nba.get_monthly_schedule(tolower(m), year)
     
     all_months[[m]] = new_month
     
@@ -75,5 +77,42 @@ get_annual_schedule <- function(year){
     mutate(season = paste0(year-1, year))
   
   return(annual_schedule)
+  
+}
+
+nba.get_times <- function(link_ending){
+  
+  box <- read_html(paste0("https://www.basketball-reference.com", link_ending))
+  
+  box %>%
+    html_nodes("#content .scorebox") %>%
+    html_text() %>%
+    str_extract("[0-9]+:[0-9]{2} [A-z]+") -> game_start
+  
+  box %>%
+    html_nodes("#content") %>%
+    html_text() %>%
+    str_extract("[0-9]+:[0-9]{2}\\n") %>%
+    gsub("\\n", "",.) -> game_length
+  
+  return(c(game_start, game_length))
+  
+}
+
+nba.enhance_schedule <- function(schedule_df){
+  
+  all_times <- pblapply(schedule_df$link, nba.get_times)
+  
+  all_times_df <- data.frame(matrix(unlist(all_times), nrow = length(all_times), byrow = T), stringsAsFactors = FALSE)
+  colnames(all_times_df) <- c("start_time", "game_length")
+  
+  enhanced_schedule_df <- bind_cols(schedule_df, all_times_df) %>%
+    mutate(pm = grepl("pm", start_time, ignore.case = T),
+           start_time = gsub("[A-z]{2}", "", start_time)) %>%
+    separate(start_time, into = c("start_hour", "start_minute"), sep = ":", convert = TRUE) %>%
+    mutate(start_hour = start_hour + ifelse(pm & start_hour < 12, 12, 0)) %>%
+    separate(game_length, into = c("length_hours", "length_minutes"), sep = ":", convert = TRUE)
+  
+  return(enhanced_schedule_df)
   
 }

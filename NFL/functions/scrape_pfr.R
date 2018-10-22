@@ -18,7 +18,7 @@ nabs <- function(x) {
 }
 
 # Scraping functions
-scrape_schedule <- function(yyyy){
+nfl.get_annual_schedule <- function(yyyy){
   
   # Description
   # Scrapes the schedule of all games played in a single NFL season from pro-football-reference.com's "YYYY NFL Weekly Schedule" Example page: https://www.pro-football-reference.com/years/2018/games.htm
@@ -61,7 +61,7 @@ scrape_schedule <- function(yyyy){
   
 }
 
-get_times <- function(link_ending){
+nfl.get_times <- function(link_ending){
 
   
   url <- paste0("https://www.pro-football-reference.com", link_ending)
@@ -82,16 +82,16 @@ get_times <- function(link_ending){
 
 }
 
-enhance_schedule <- function(schedule_df){
+nfl.enhance_schedule <- function(schedule_df){
   
-  all_times <- pblapply(schedule_df$link, get_times)
+  all_times <- pblapply(schedule_df$link, nfl.get_times)
   
   all_times_df <- data.frame(matrix(unlist(all_times), nrow = length(all_times), byrow = T), stringsAsFactors = FALSE)
   colnames(all_times_df) <- c("start_time", "game_length")
 
   enhanced_schedule_df <- bind_cols(schedule_df, all_times_df) %>%
-    mutate(pm = grepl("pm", start_time),
-           start_time = gsub("[a-z]{2}", "", start_time)) %>%
+    mutate(pm = grepl("pm", start_time, ignore.case = T),
+           start_time = gsub("[A-z]{2}", "", start_time)) %>%
     separate(start_time, into = c("start_hour", "start_minute"), sep = ":", convert = TRUE) %>%
     mutate(start_hour = start_hour + ifelse(pm & start_hour < 12, 12, 0)) %>%
     separate(game_length, into = c("length_hours", "length_minutes"), sep = ":", convert = TRUE)
