@@ -17,38 +17,35 @@ for(yyyy in 2001:2018){
 all_es_df <- do.call("rbind", es_list) %>%
   data.frame(row.names = NULL)
 
-# Reformat so each row corresponds to one team, with opponent ("opp") and opponent stats ("opp_pts") - not "winner", "loser" and "ptsW"/"ptsL" etc
-winners <- all_es_df %>%
-  select(week:time, # unchanged
-         team = winner,
-         is_away, # unchanged
-         opp = loser,
+# Reformat so each row corresponds to one team, with opponent ("opp") and opponent stats ("opp_pts") - not "visitor", "home" and "pts_visitor"/"pts_home" etc
+visitors <- all_es_df %>%
+  mutate(is_away = TRUE) %>%
+  select(date, time, # unchanged
+         team = visitor,
+         is_away,
+         opp = home,
          link, # unchanged
-         pts = ptsW,
-         opp_pts = ptsL,
-         yds = ydsW,
-         opp_yds = ydsL,
-         to = toW,
-         opp_to = toL,
+         pts = pts_visitor,
+         opp_pts = pts_home,
+         ot,
+         att,
          start_hour:pm) # unchanged
 
-losers <- all_es_df %>%
-  select(week:time, # unchanged
-         team = loser,
-         is_away, # changed below in mutate (flipped)
-         opp = winner,
+homes <- all_es_df %>%
+  mutate(is_away = FALSE) %>%
+  select(date, time, # unchanged
+         team = home,
+         is_away,
+         opp = visitor,
          link, # unchanged
-         pts = ptsL,
-         opp_pts = ptsW,
-         yds = ydsL,
-         opp_yds = ydsW,
-         to = toL,
-         opp_to = toW,
-         start_hour:pm) %>% # unchanged
-  mutate(is_away = !is_away)
+         pts = pts_home,
+         ot,
+         att,
+         start_hour:pm) # unchanged
 
 all_team_games <- 
-  bind_rows(winners, losers) %>%
-  arrange(date)
+  bind_rows(visitors, homes) %>%
+  arrange(date) %>%
+  mutate(index = 1:nrow(all_team_games))
 
-save(all_team_games, file = "NFL/data/merged_2001_2018.Rdata")
+save(all_team_games, file = "NBA/data/merged_2001_2018.Rdata")

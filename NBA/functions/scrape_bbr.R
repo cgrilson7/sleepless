@@ -16,7 +16,7 @@ nabs <- function(x) {
 # Games listed by month:
 nba.get_monthly_schedule <- function(month, year){
   
-  url = paste0("https://www.basketball-reference.com/leagues/NBA_", year, "_games-", month, ".html")
+  url <- paste0("https://www.basketball-reference.com/leagues/NBA_", year, "_games-", month, ".html")
   
   out <- tryCatch({
     
@@ -56,8 +56,7 @@ nba.get_monthly_schedule <- function(month, year){
   
   return(schedule_df)
   
-  },
-  error = function(cond){
+  }, error = function(cond){
     
     message(paste("^ This month's URL does not seem to exist:", url))
     closeAllConnections()
@@ -70,7 +69,7 @@ nba.get_monthly_schedule <- function(month, year){
 
 nba.get_annual_schedule <- function(year){
   
-  all_months <- list() #create an empty list
+  all_months <- list() # create an empty list to hold each of the months scraped
   
   cat(paste0("Scraping ", year-1, "-", year, " schedule...\n"))
   
@@ -78,9 +77,9 @@ nba.get_annual_schedule <- function(year){
     
     cat(m, "\n")
     
-    new_month = nba.get_monthly_schedule(tolower(m), year)
+    new_month <- nba.get_monthly_schedule(tolower(m), year)
     
-    all_months[[m]] = new_month
+    all_months[[m]] <- new_month
     
   }
   
@@ -117,10 +116,10 @@ nba.get_times <- function(link_ending){
     
     message(paste("^ This boxscore does not seem to exist:", url))
     closeAllConnections()
+    
     return(c(NA, NA))
     
-  }
-  )
+  })
   
   return(out)
  
