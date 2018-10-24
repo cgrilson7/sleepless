@@ -91,13 +91,19 @@ nba.get_annual_schedule <- function(year){
   
 }
 
-nba.get_times <- function(link_ending){
+nba.get_times <- function(link_ending, wait = TRUE){
+  
+  if(wait){
+    wait_time <- runif(1, 0, 2) 
+    # Generate random time (between 0 & 2 seconds) to sleep before scraping the page
+    Sys.sleep(wait_time)
+  }
   
   url <- paste0("https://www.basketball-reference.com", link_ending)
   
   out <- tryCatch({
     
-    box <- read_html(paste0("https://www.basketball-reference.com", link_ending))
+    box <- read_html(url)
     
     box %>%
       html_nodes("#content .scorebox") %>%
