@@ -18,7 +18,6 @@ nabs <- function(x) {
 # Baseball-reference not organized like the other leagues with monthly/yearly schedule tables.
 # Have to first get the links, scrape each, and build a schedule table myself.
 
-## PROBLEM - postseason games (at least in 2018) still have "preview" links, not boxscores. Need to convert to box score links.
 
 mlb.get_boxscore_links <- function(year){
   
@@ -36,6 +35,21 @@ mlb.get_boxscore_links <- function(year){
     
     boxscore_links <- all_links[grepl("/boxes/[A-z]+/[A-z]+[0-9]+", all_links)]
     
+    ## PROBLEM - 2018 postseason games still have "preview" links, not boxscores. 
+    # Need to convert these to box score links.
+    
+    preview_links <- all_links[grepl("/[0-9]{4}/[A-z]+[0-9]+", all_links)]
+    
+    if(!is_empty(preview_links)){
+      
+      preview_links_team <- preview_links %>% str_extract("[A-Z]{3}")
+      preview_links_date <- preview_links %>% str_extract("[0-9]{9}")
+      
+      preview_to_boxscore <- paste0("/boxes/", preview_links_team, "/", preview_links_date, ".shtml")
+      
+      boxscore_links <- c(boxscore_links, preview_to_boxscore)
+    }
+    
     return(boxscore_links)
   },
   error = function(cond){
@@ -50,7 +64,7 @@ mlb.get_boxscore_links <- function(year){
 mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
   
   if(wait){
-    wait_time <- runif(1, 0, 3) # generate random time (between 0 & 3 seconds) to sleep before scraping the page
+    wait_time <- runif(1, 0, 1) # generate random time (between 0 & 3 seconds) to sleep before scraping the page
     Sys.sleep(wait_time)
   }
   
@@ -67,6 +81,7 @@ mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
     scorebox %>%
       html_nodes("a") %>%
       html_attr("href") -> scorebox_links
+    # Links to team pages, logos
     
     teams <- scorebox_links[grepl("/teams/", scorebox_links)] %>%
       str_extract("[A-Z]{3}")
@@ -78,23 +93,19 @@ mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
       html_text()
     # First element is the visiting team's score.
     # Second is the home team's score.
+    if(is.na(runs)){
+      runs <- rep(NA, 2)
+    }
     
     scorebox %>%
       html_text() -> scorebox_text
     
-    start_time_cols <- scorebox_text %>%
-      str_extract("[0-9]+:[0-9]{2}[[:space:]][A-z]\\.[A-z]\\.[[:space:]][A-z]{2}") %>%
-      str_split("[[:space:]]") %>%
-      unlist()
-    # First element is the time (12-hour clock).
-    # Second element is AM/PM.
-    # Third element is the time zone (ET/CT/PT).
-    
-    both_times <- scorebox_text %>%
-      str_extract_all("[0-9]+:[0-9]{2}") %>%
-      unlist()
-    game_length <- both_times[2]
-    # ^ There's a better way to do this.
+    start_time <- scorebox_text %>%
+      str_extract("[0-9]+:[0-9]{2}[[:space:]][A-z]\\.[A-z]\\.[[:space:]][A-z]{2}")
+
+    game_length <- scorebox_text %>%
+      str_extract("[0-9]+:[0-9]{2}\n") %>%
+      str_remove("\n")
     
     # #### Linescore table ####
     # Implement eventually, but don't really need it right now. 
@@ -103,7 +114,7 @@ mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
     #   html_nodes(".linescore_wrap table") %>%
     #   html_table() -> test
     
-    return(c(link_ending, teams, runs, start_time_cols, game_length))
+    return(c(link_ending, teams, runs, start_time, game_length))
     
   }, error = function(cond){
     
@@ -116,15 +127,27 @@ mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
   
 }
 
-mlb.get_annual_schedule <- function(year){
+mlb.get_annual_schedule <- function(year, wait = TRUE){
   
   year_links <- mlb.get_boxscore_links(year)
   
-  game_details <- pblapply(year_links, mlb.get_boxscore_details)
+  # Lapply mlb.get_boxscore_details over links.
   
-  schedule_df <- data.frame(matrix(unlist(game_details), nrow = length(game_details), byrow = T), stringsAsFactors = FALSE)
+  games_list <- pblapply(year_links, mlb.get_boxscore_details, wait)
   
-  colnames(schedule_df) <- c("link", "visitor", "home", "visitor_score", "home_score", "start_time", "pm", "time_zone", "game_length")
+  # Save list in case conversion to data.frame doesn't work.
+  
+  save(games_list, file = paste0("MLB/data/games_list_", year, ".Rdata"))
+  
+  # Convert to data.frame, name columns
+  
+  schedule_df <- data.frame(matrix(unlist(games_list), nrow = length(games_list), byrow = T), stringsAsFactors = FALSE)
+  
+  colnames(schedule_df) <- c("link", "visitor", "home", "visitor_score", "home_score", "start_time", "game_length")
+  
+  # Save schedule_df 
+  
+  save(schedule_df, file = paste0("MLB/data/schedule", year, ".Rdata"))
   
   return(schedule_df)
   
@@ -132,14 +155,18 @@ mlb.get_annual_schedule <- function(year){
 
 mlb.enhance_schedule <- function(schedule_df){
   
-  schedule_df %>%
-    mutate(pm = pm %in% c("p.m.", "pm", "PM", "P.M."),
+  enhanced_schedule_df <- schedule_df %>%
+    mutate(pm = grepl("p.m.|pm|PM|P.M.", start_time),
+           tz = str_extract(start_time, "[A-Z]+"),
            visitor_score = nabs(visitor_score),
            home_score = nabs(home_score)) %>%
+    mutate(start_time = str_extract(start_time, "[0-9]+:[0-9]{2}"))
     separate(start_time, into = c("start_hour", "start_minute"), sep = ":", convert = TRUE) %>%
     mutate(start_hour = start_hour + ifelse(pm & start_hour < 12, 12, 0)) %>%
-    separate(game_length, into = c("length_hours", "length_minutes"), sep = ":", convert = TRUE) 
-  
+    separate(game_length, into = c("length_hours", "length_minutes"), sep = ":", convert = TRUE)
+
+    save(enhanced_schedule_df, file = paste0("MLB/data/es_", year, ".Rdata"))
+    
   return(enhanced_schedule_df)
   
 }
