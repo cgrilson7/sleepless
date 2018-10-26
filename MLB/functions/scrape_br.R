@@ -18,7 +18,6 @@ nabs <- function(x) {
 # Baseball-reference not organized like the other leagues with monthly/yearly schedule tables.
 # Have to first get the links, scrape each, and build a schedule table myself.
 
-
 mlb.get_boxscore_links <- function(year){
   
   url <- paste0("https://www.baseball-reference.com/leagues/MLB/", year, "-schedule.shtml")
@@ -48,6 +47,7 @@ mlb.get_boxscore_links <- function(year){
       preview_to_boxscore <- paste0("/boxes/", preview_links_team, "/", preview_links_team, preview_links_date, ".shtml")
       
       boxscore_links <- c(boxscore_links, preview_to_boxscore)
+      
     }
     
     return(boxscore_links)

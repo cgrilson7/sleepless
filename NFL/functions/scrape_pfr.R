@@ -75,10 +75,10 @@ nfl.get_times <- function(link_ending){
   if(length(times) == 0){
     return(c(NA, NA))
   } else if(length(times) == 1){
-    return(append(times, NA))
-  } else {
-    return(times)
+    return(c(times, NA))
   }
+  
+  return(times)
 
 }
 
