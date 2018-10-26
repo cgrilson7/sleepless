@@ -27,6 +27,8 @@ nfl.get_annual_schedule <- function(yyyy){
   
   url <- paste0("https://www.pro-football-reference.com/years/", yyyy, "/games.htm")
   
+  out <- tryCatch({
+    
   page <- read_html(url)
   
   # Get schedule table
@@ -58,13 +60,23 @@ nfl.get_annual_schedule <- function(yyyy){
     filter(date < Sys.Date()) -> schedule_df
 
   return(schedule_df)
+  },
+  error = function(cond){
+    
+    message(paste("^ This year's URL does not seem to exist:",url))
+    closeAllConnections()
+    
+    })
+  
+  return(out)
   
 }
 
 nfl.get_times <- function(link_ending){
-
   
   url <- paste0("https://www.pro-football-reference.com", link_ending)
+  
+  out <- tryCatch({
   
   times <- read_html(url) %>%
     html_nodes("#content .scorebox_meta") %>%
@@ -72,15 +84,27 @@ nfl.get_times <- function(link_ending){
     str_extract_all("[0-9]+:[0-9]+.+") %>%
     unlist()
   
-  if(length(times) == 0){
+  if (length(times) == 0) {
     return(c(NA, NA))
-  } else if(length(times) == 1){
+  } else if (length(times) == 1) {
     return(c(times, NA))
   }
   
   return(times)
-
+  },
+  
+  error = function(cond) {
+    
+    message(paste("^ This boxscore URL does not seem to exist:", url))
+    return(c(NA, NA))
+    closeAllConnections()
+    
+  })
+  
+  return(out)
+  
 }
+
 
 nfl.enhance_schedule <- function(schedule_df){
   
