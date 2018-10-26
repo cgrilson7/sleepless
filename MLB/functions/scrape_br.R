@@ -24,7 +24,7 @@ mlb.get_boxscore_links <- function(year){
   url <- paste0("https://www.baseball-reference.com/leagues/MLB/", year, "-schedule.shtml")
   
   out <- tryCatch({
-    page <- read_html(url) 
+    page <- read_html(url)
     
     page %>% 
       html_nodes("a") %>%
@@ -45,7 +45,7 @@ mlb.get_boxscore_links <- function(year){
       preview_links_team <- preview_links %>% str_extract("[A-Z]{3}")
       preview_links_date <- preview_links %>% str_extract("[0-9]{9}")
       
-      preview_to_boxscore <- paste0("/boxes/", preview_links_team, "/", preview_links_date, ".shtml")
+      preview_to_boxscore <- paste0("/boxes/", preview_links_team, "/", preview_links_team, preview_links_date, ".shtml")
       
       boxscore_links <- c(boxscore_links, preview_to_boxscore)
     }
@@ -119,6 +119,7 @@ mlb.get_boxscore_details <- function(link_ending, wait = TRUE){
   }, error = function(cond){
     
     message(paste("Boxscore does not seem to exist:", url))
+    return(c(link_ending, rep(NA, 6)))
     closeAllConnections()
     
   })
@@ -147,7 +148,7 @@ mlb.get_annual_schedule <- function(year, wait = TRUE){
   
   # Save schedule_df 
   
-  save(schedule_df, file = paste0("MLB/data/schedule", year, ".Rdata"))
+  save(schedule_df, file = paste0("MLB/data/schedule_", year, ".Rdata"))
   
   return(schedule_df)
   
@@ -159,13 +160,12 @@ mlb.enhance_schedule <- function(schedule_df){
     mutate(pm = grepl("p.m.|pm|PM|P.M.", start_time),
            tz = str_extract(start_time, "[A-Z]+"),
            visitor_score = nabs(visitor_score),
-           home_score = nabs(home_score)) %>%
-    mutate(start_time = str_extract(start_time, "[0-9]+:[0-9]{2}"))
+           home_score = nabs(home_score),
+           date = as.Date(str_extract(link, "[0-9]{8}"), format = "%Y%m%d")) %>%
+    mutate(start_time = str_extract(start_time, "[0-9]+:[0-9]{2}")) %>%
     separate(start_time, into = c("start_hour", "start_minute"), sep = ":", convert = TRUE) %>%
     mutate(start_hour = start_hour + ifelse(pm & start_hour < 12, 12, 0)) %>%
     separate(game_length, into = c("length_hours", "length_minutes"), sep = ":", convert = TRUE)
-
-    save(enhanced_schedule_df, file = paste0("MLB/data/es_", year, ".Rdata"))
     
   return(enhanced_schedule_df)
   

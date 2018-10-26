@@ -6,8 +6,10 @@ for(yyyy in 2001:2018) {
   
   cat(paste0(yyyy,"\n"))
   Sys.sleep(1)
-  
+   
   schedule_df <- mlb.get_annual_schedule(yyyy, wait = FALSE)
+  
+  load(paste0("MLB/data/schedule_", yyyy, ".Rdata"))
   
   enhanced_schedule_df <- mlb.enhance_schedule(schedule_df)
   
