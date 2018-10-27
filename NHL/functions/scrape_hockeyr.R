@@ -36,9 +36,10 @@ nhl.get_annual_schedule <- function(yyyy){
     html_table() -> schedule_list
   
   schedule_df <- do.call("rbind", schedule_list)
-  colnames(schedule_df) <- c("date", "visitor", "g_visitor", "home", "g_home", "ot", "att", "game_length", "notes")
+  colnames(schedule_df) <- c("date", "visitor", "g_visitor", "home", "g_home", "ot", "att", "LOG", "notes")
   
   schedule_df %<>%
+    filter(!is.na(g_visitor) & !is.na(g_home)) %>%
     mutate(g_visitor = nabs(g_visitor),
            g_home = nabs(g_home),
            ot = ot == "OT",

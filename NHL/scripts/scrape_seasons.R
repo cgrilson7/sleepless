@@ -2,7 +2,7 @@
 source('NHL/functions/scrape_hockeyr.R')
 
 # Scrape each year in a foreach
-for(yyyy in 2006:2018) {
+for(yyyy in 2014:2018) {
   
   cat(paste0(yyyy,"\n"))
   Sys.sleep(1)
