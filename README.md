@@ -8,3 +8,6 @@ The big 4 sports teams of New England - the Bruins (NHL), Celtics (NBA), Patriot
 As these teams rose to prominence, they captured the interest of the nation - or at least of the national broadcasters. As a result, a disproportionate number of their games have been scheduled in the late-evening, "prime time" slot. And with games stretching longer and longer - especially in the MLB and NFL - diehard Boston fans have seen their bedtimes pushed back later and later.
 
 Exactly to what extent has this phenomenon impacted the sleep & productivity of working & learning Bostonians, and what other sports-centric cities (if any) have faced similar burdens?
+
+
+https://youtu.be/7WC4u1MZIHI?t=203
